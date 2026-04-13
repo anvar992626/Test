@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signallab.local/schemas/orchestration-context.json",
+  "title": "Signal Lab orchestration context",
+  "type": "object",
+  "required": ["runId", "objective", "phase", "tasks", "updatedAt"],
+  "properties": {
+    "runId": { "type": "string", "minLength": 1 },
+    "objective": { "type": "string", "minLength": 1 },
+    "phase": {
+      "type": "string",
+      "enum": ["planning", "execution", "verification", "closed"]
+    },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "model", "modelReason", "status", "attempts", "allowedFiles", "acceptance"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "model": { "type": "string", "enum": ["fast", "default", "reasoning"] },
+          "modelReason": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "done", "blocked", "skipped"]
+          },
+          "attempts": { "type": "integer", "minimum": 0 },
+          "lastError": { "type": ["string", "null"] },
+          "allowedFiles": { "type": "array", "items": { "type": "string" } },
+          "acceptance": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

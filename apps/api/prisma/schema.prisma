@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ScenarioRun {
+  id            String   @id @default(uuid())
+  scenario      String
+  outcome       String
+  durationMs    Int
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([scenario])
+}

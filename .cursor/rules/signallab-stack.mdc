@@ -1,0 +1,40 @@
+---
+description: Signal Lab mandatory stack, ports, and repo map (do not swap technologies without explicit human approval).
+alwaysApply: true
+---
+
+# Signal Lab — stack contract
+
+For a **single-page map** of the AI layer (rules, skills, commands, hooks, orchestrator), read **`AGENTS.md`** at the repo root.
+
+## Approved stack (do not replace)
+
+- **Frontend**: Next.js (App Router), Tailwind CSS, shadcn/ui patterns, TanStack Query, React Hook Form (+ zod).
+- **Backend**: NestJS, Prisma, PostgreSQL.
+- **Observability**: Prometheus scrapes `/metrics`, Grafana + Loki + Promtail, Sentry optional via `SENTRY_DSN`.
+- **Infra**: Docker Compose at repo root.
+
+## Service map
+
+- `apps/web` — UI (port **3000** in compose).
+- `apps/api` — REST API + `/metrics` (port **3001**).
+- `infra/*` — Prometheus, Grafana provisioning, Promtail config.
+- `docker-compose.yml` — source of truth for ports (**3020** Grafana direct, **3100** Loki, **9090** Prometheus).
+
+## API routes
+
+- `GET /health` — liveness + PostgreSQL `SELECT 1` (503 if DB down).
+- `GET /api/docs` — Swagger UI (OpenAPI); disable with `SWAGGER_ENABLED=false`.
+- `POST /api/scenarios` — run scenario (`{ "scenario": "system_error" | ... }`).
+- `GET /api/scenarios` — recent persisted runs.
+- `GET /metrics` — Prometheus text exposition.
+
+## Conventions
+
+- Prefer **small, focused diffs**; do not refactor unrelated modules.
+- After Prisma schema edits: regenerate client and add/apply migrations under `apps/api/prisma/migrations`.
+- Log lines intended for demo search include **`signallab: true`** in structured JSON (nestjs-pino). Promtail promotes **`scenario`** (and **`level`**) to Loki labels for the `api` container stream.
+
+## Grafana
+
+- Open **`http://localhost:3020`** (admin / admin unless changed). `GF_SERVER_ROOT_URL` in Compose matches this to avoid redirect loops.

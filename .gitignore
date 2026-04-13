@@ -1,0 +1,13 @@
+node_modules
+dist
+.next
+.env
+.env.local
+*.log
+.DS_Store
+.idea
+.vscode
+coverage
+
+# Local orchestrator state (resume between chats); commit .cursor/orchestration-context.example.json only
+.cursor/orchestration-context.json

@@ -1,0 +1,12 @@
+{
+  "name": "signallab",
+  "private": true,
+  "description": "Root helpers (apps live in apps/*)",
+  "scripts": {
+    "verify": "node scripts/verify-signallab.mjs",
+    "verify:orchestration": "node scripts/validate-orchestration-context.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

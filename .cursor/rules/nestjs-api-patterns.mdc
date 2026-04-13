@@ -1,0 +1,12 @@
+---
+description: NestJS + Prisma patterns for apps/api (controllers thin, services own logic).
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# API conventions
+
+- **Controllers** (`*.controller.ts`): HTTP only — DTO validation happens via global `ValidationPipe`, no business rules.
+- **Services** (`*.service.ts`): orchestrate Prisma, metrics, and structured logging (`signallab: true` on JSON payloads).
+- **New endpoints**: register in a dedicated module; import `PrismaModule` / `MetricsModule` instead of duplicating providers.
+- **Errors**: throw framework errors (`BadRequestException`, …) for expected failures; unexpected failures bubble to `SentryExceptionFilter`.

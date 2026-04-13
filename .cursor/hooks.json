@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/guard-destructive-shell.mjs"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "node .cursor/hooks/prisma-followup.mjs",
+        "matcher": "Write"
+      }
+    ]
+  }
+}

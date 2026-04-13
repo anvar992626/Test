@@ -1,0 +1,75 @@
+{
+  "$schema": "./orchestration-context.schema.json",
+  "runId": "example-add-scenario-20260413",
+  "objective": "Add a new scenario type end-to-end (API + UI + metrics label + docs).",
+  "phase": "planning",
+  "createdAt": "2026-04-13T12:00:00.000Z",
+  "updatedAt": "2026-04-13T12:00:00.000Z",
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Plan: list files and acceptance checks",
+      "model": "default",
+      "modelReason": "Planning touches multiple modules; avoid wrong assumptions.",
+      "status": "done",
+      "attempts": 1,
+      "lastError": null,
+      "allowedFiles": [],
+      "acceptance": ["Written task list with allowed files per step"]
+    },
+    {
+      "id": "T2",
+      "title": "API: DTO + scenario.service branch",
+      "model": "fast",
+      "modelReason": "Localized Nest changes with clear pattern to copy.",
+      "status": "in_progress",
+      "attempts": 0,
+      "lastError": null,
+      "allowedFiles": [
+        "apps/api/src/scenario/dto/run-scenario.dto.ts",
+        "apps/api/src/scenario/scenario.service.ts"
+      ],
+      "acceptance": ["cd apps/api && npm run build"]
+    },
+    {
+      "id": "T3",
+      "title": "Metrics: counter labels if new outcome paths",
+      "model": "fast",
+      "modelReason": "Small edit to MetricsService + dashboard JSON.",
+      "status": "pending",
+      "attempts": 0,
+      "lastError": null,
+      "allowedFiles": [
+        "apps/api/src/metrics/metrics.service.ts",
+        "infra/grafana/provisioning/dashboards/json/signal-lab.json"
+      ],
+      "acceptance": ["cd apps/api && npm run build"]
+    },
+    {
+      "id": "T4",
+      "title": "Web: RHF enum + scenario labels",
+      "model": "fast",
+      "modelReason": "Mirror existing scenario entries in page.tsx.",
+      "status": "pending",
+      "attempts": 0,
+      "lastError": null,
+      "allowedFiles": ["apps/web/src/app/page.tsx"],
+      "acceptance": ["cd apps/web && npm run build"]
+    },
+    {
+      "id": "T5",
+      "title": "Verify via observability skill",
+      "model": "default",
+      "modelReason": "Cross-stack validation; follow checklist carefully.",
+      "status": "pending",
+      "attempts": 0,
+      "lastError": null,
+      "allowedFiles": ["README.md", "prds/002_prd-observability-demo.md"],
+      "acceptance": [
+        "Manual: run scenario in UI",
+        "Metrics + Loki label query per signallab-observability skill"
+      ]
+    }
+  ],
+  "notes": "Copy to orchestration-context.json (gitignored) and edit for your run."
+}
