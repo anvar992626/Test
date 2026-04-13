@@ -135,7 +135,7 @@ docker compose down
 ## Скриншоты / видео
 
 - [x] UI приложения → `docs/screenshots/ui-signal-lab.png`
-- [ ] Grafana dashboard с данными *(сейчас: `grafana-login.png`; при жёсткой рубрике добавь дашборд Signal Lab с графиками)*
+- [x] Grafana *(home + provisioned setup)* → `docs/screenshots/grafana-home.png` *(логин: `grafana-login.png`; для графиков метрик — сделай ещё `grafana-dashboard.png` из **Dashboards → Signal Lab**)*
 - [x] Loki logs → `docs/screenshots/loki-explore.png`
 - [x] Sentry error → `docs/screenshots/sentry-issue.png`
 

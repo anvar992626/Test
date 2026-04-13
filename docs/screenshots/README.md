@@ -6,6 +6,7 @@ Files in this folder (for submission / rubric):
 |------|----------------|
 | `ui-signal-lab.png` | Main UI: scenario form + run history + observability links |
 | `grafana-login.png` | Grafana sign-in (`admin` / `admin` at `http://localhost:3020`) |
+| `grafana-home.png` | Grafana **Home** after login — welcome + “Basic” setup (data source + first dashboard complete) |
 | `loki-explore.png` | Grafana **Explore** → **Loki** (log query UI) |
 | `sentry-issue.png` | Sentry **Issues** after `system_error` (redact secrets if you re-capture) |
 
