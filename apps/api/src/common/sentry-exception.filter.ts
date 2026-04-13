@@ -10,7 +10,7 @@ import { Response } from 'express';
 
 @Catch()
 export class SentryExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
+  async catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
 
@@ -21,6 +21,10 @@ export class SentryExceptionFilter implements ExceptionFilter {
 
     if (!isHttp || status >= 500) {
       Sentry.captureException(exception);
+      // Ensure the event is sent before the response closes (helps in Docker / Nest).
+      if (process.env.SENTRY_DSN) {
+        await Sentry.flush(2000);
+      }
     }
 
     const body = isHttp

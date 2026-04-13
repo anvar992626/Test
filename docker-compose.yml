@@ -21,12 +21,14 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
+    # Repo-root `.env` supplies SENTRY_* (and any other optional vars). Do not also set empty
+    # `SENTRY_DSN: ${SENTRY_DSN:-}` here — that overrides env_file and wipes the DSN when host interpolation is empty.
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       PORT: 3001
       DATABASE_URL: postgresql://signallab:signallab@postgres:5432/signallab?schema=public
-      SENTRY_DSN: ${SENTRY_DSN:-}
-      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-local}
       LOG_LEVEL: info
       CORS_ORIGIN: http://localhost:3000
     ports:

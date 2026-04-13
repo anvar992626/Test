@@ -1,14 +1,13 @@
 # Signal Lab — Submission Checklist
 
-Заполни поля **`[ЗАПОЛНИ]`** перед сдачей. Остальное уже привязано к текущему репозиторию.
 
 ---
 
 ## Репозиторий
 
-- **URL**: `[ЗАПОЛНИ: https://github.com/... или GitLab/...]`
-- **Ветка**: `[ЗАПОЛНИ: например main]`
-- **Время работы** (приблизительно): `[ЗАПОЛНИ]` часов
+- **URL**: `https://github.com/anvar992626/Test`
+- **Ветка**: `main`
+- **Время работы** (приблизительно): `1` часов *(таймбокс из ТЗ; укажи свой факт, если отличается)*
 
 ---
 
@@ -41,7 +40,7 @@ docker compose down
 |-----------|:-------------:|----------------|
 | Next.js (App Router) | ☑ | `apps/web/src/app/` |
 | shadcn/ui | ☑ | `apps/web/components.json`, `apps/web/src/components/ui/*` |
-| Tailwind CSS | ☑ | `apps/web/tailwind.config.ts`, `src/app/globals.css` |
+| Tailwind CSS | ☑ | `apps/web/tailwind.config.ts`, `apps/web/src/app/globals.css` |
 | TanStack Query | ☑ | `apps/web/src/app/providers.tsx`, `page.tsx` (`useQuery` / `useMutation`) |
 | React Hook Form | ☑ | `apps/web/src/app/page.tsx` + zod, `Controller` + `Select` |
 | NestJS | ☑ | `apps/api/src/**/*.ts` |
@@ -128,46 +127,46 @@ docker compose down
 - **Путь к skill**: `.cursor/skills/signallab-orchestrator/SKILL.md`
 - **Путь к context file** (пример): `.cursor/orchestration-context.example.json` (рабочая копия `.cursor/orchestration-context.json` — в `.gitignore`)
 - **Сколько фаз**: 4 — `planning` → `execution` → `verification` → `closed`
-- **Какие задачи для fast model**: механические правки в одном модуле (DTO, ветка в `scenario.service`, пункт в `page.json`, правка Grafana JSON) — см. таблицу **Model selection** в skill
+- **Какие задачи для fast model**: механические правки в одном модуле (DTO, ветка в `scenario.service`, пункты в `page.tsx`, правка Grafana JSON) — см. таблицу **Model selection** в skill
 - **Поддерживает resume**: **да** — обновление JSON + промпт в skill + команда `/orchestrator-resume`; валидация формы: `npm run verify:orchestration`
 
 ---
 
 ## Скриншоты / видео
 
-- [ ] UI приложения
-- [ ] Grafana dashboard с данными
-- [ ] Loki logs
-- [ ] Sentry error
+- [x] UI приложения → `docs/screenshots/ui-signal-lab.png`
+- [ ] Grafana dashboard с данными *(сейчас: `grafana-login.png`; при жёсткой рубрике добавь дашборд Signal Lab с графиками)*
+- [x] Loki logs → `docs/screenshots/loki-explore.png`
+- [x] Sentry error → `docs/screenshots/sentry-issue.png`
 
-Список имён файлов: `docs/screenshots/README.md`. Вставь ссылки или вложения:
+Индекс: `docs/screenshots/README.md`. После `git push` смотреть на GitHub:
 
-- `[ЗАПОЛНИ: ссылка/путь к архиву]`
+- **Ссылка / архив**: `https://github.com/anvar992626/Test/tree/main/docs/screenshots`
 
 ---
 
 ## Что не успел и что сделал бы первым при +4 часах
 
-`[ЗАПОЛНИ]` — кратко (или напиши: «всё по ТЗ; +4ч — e2e Playwright / CI / алёрты в Grafana»).
+ТЗ закрыто; при **+4 часа** в первую очередь: **e2e** (Playwright) сценарий «UI → API → метрика выросла», затем **CI** (GitHub Actions: `docker compose config`, `apps/api` + `apps/web` build), опционально **Grafana alert rules** на отсутствие scrape / рост ошибок.
 
 ---
 
 ## Вопросы для защиты (подготовься)
 
 1. **Почему именно такая декомпозиция skills?**  
-   Разделение по **ролям**: карта репо (stack) vs **проверяемый чеклист** (observability) vs **данные** (Prisma) vs **процесс** (orchestrator). Так в новом чате можно подтянуть **один** узкий skill вместо всего репо.
+   Разделение по **ролям**: карта репо (stack) vs **проверяемый чеклист** (observability) vs **данные** (Prisma) vs **процесс** (orchestrator). В новом чате можно подтянуть **один** узкий skill вместо всего репо.
 
 2. **Какие задачи подходят для малой модели и почему?**  
-   Помеченные **`fast`**: узкий diff, есть образец в коде, явный `allowedFiles`, проверка одной командой `npm run build`. **Planner/verify** — **`default`**, чтобы не ломать контракты.
+   Помеченные **`fast`**: узкий diff, есть образец в коде, явный `allowedFiles`, проверка `npm run build`. **Planner / verification** — **`default`**, чтобы не ломать контракты между модулями.
 
 3. **Какие marketplace skills подключил, а какие заменил custom — и почему?**  
-   Marketplace даёт **общие** best practices по стеку; **custom** фиксируют **этот** монорепо (порты, Loki labels, сценарии, orchestration JSON). Иначе модель гадает по специфике задания.
+   Marketplace даёт **общие** best practices по стеку; **custom** фиксируют **этот** монорепо (порты, Loki labels, сценарии, orchestration JSON). Без custom модель угадывает специфику задания.
 
 4. **Какие hooks реально снижают ошибки?**  
-   Опасные **Docker/shell** команды и **забытый migrate** после Prisma — самые частые регрессии в таких проектах.
+   Опасные **Docker/shell** команды и **забытый migrate** после Prisma — типичные регрессии в подобных проектах.
 
 5. **Как orchestrator экономит контекст по сравнению с одним большим промптом?**  
-   Один **objective**, задачи с **allow-list файлов**, **capsule handoff** (только ошибка + пути), **верификация шагами**, новый чат читает **только** context JSON + один skill.
+   Один **objective**, задачи с **allow-list файлов**, **capsule handoff** (ошибка + пути), **верификация шагами**; новый чат читает **context JSON** + один skill вместо полного дерева.
 
 ---
 
@@ -182,5 +181,5 @@ docker compose down
 
 **Заметки кандидата (свободный текст):**
 
-- Известные ограничения:
-- Отклонения от исходного ТЗ + обоснование:
+- **Известные ограничения:** Grafana открывается на **`http://localhost:3020`**, не `http://localhost:3000/grafana` (убраны редиректы `ERR_TOO_MANY_REDIRECTS`). Sentry требует **`SENTRY_DSN`** в окружении.
+- **Отклонения от исходного ТЗ + обоснование:** см. выше про URL Grafana; логи в Loki смотреть через **Grafana Explore**, порт `3100` — API Loki, не «красивый» UI.

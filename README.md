@@ -15,12 +15,10 @@ Observability playground: run **scenarios** from a Next.js UI, execute them in a
 docker compose up -d --build
 ```
 
-Copy `.env.example` to `.env` at the repo root if you want to inject variables into Compose. To capture `system_error` events in Sentry, set `SENTRY_DSN` **before** the first API container start (or recreate the API service after setting it):
+Copy `.env.example` to **`.env`** at the repo root before `docker compose up` — the **`api`** service loads that file (`env_file: .env`). Leave `SENTRY_DSN` empty if you do not use Sentry; otherwise set it **in `.env`** (one line, no quotes), then recreate the API:
 
 ```bash
-# PowerShell example
-$env:SENTRY_DSN="https://examplePublicKey@o0.ingest.sentry.io/0"
-docker compose up -d --build
+docker compose up -d --build api
 ```
 
 ### Ports
