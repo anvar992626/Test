@@ -147,7 +147,7 @@ docker compose down
 
 ## Что не успел и что сделал бы первым при +4 часах
 
-ТЗ закрыто; при **+4 часа** в первую очередь: **e2e** (Playwright) сценарий «UI → API → метрика выросла», затем **CI** (GitHub Actions: `docker compose config`, `apps/api` + `apps/web` build), опционально **Grafana alert rules** на отсутствие scrape / рост ошибок.
+
 
 ---
 
