@@ -6,6 +6,8 @@ export class MetricsService {
   readonly registry: client.Registry;
   private readonly runs: client.Counter<string>;
   private readonly duration: client.Histogram<string>;
+  private readonly prdRuns: client.Counter<string>;
+  private readonly httpRequests: client.Counter<string>;
 
   constructor() {
     this.registry = new client.Registry();
@@ -22,7 +24,21 @@ export class MetricsService {
       name: 'signallab_scenario_duration_seconds',
       help: 'Scenario execution wall time',
       labelNames: ['scenario'],
-      buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
+      buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10],
+      registers: [this.registry],
+    });
+
+    this.prdRuns = new client.Counter({
+      name: 'scenario_runs_total',
+      help: 'Scenario runs (type × status, PRD naming)',
+      labelNames: ['type', 'status'],
+      registers: [this.registry],
+    });
+
+    this.httpRequests = new client.Counter({
+      name: 'http_requests_total',
+      help: 'HTTP requests',
+      labelNames: ['method', 'path', 'status'],
       registers: [this.registry],
     });
   }
@@ -30,5 +46,10 @@ export class MetricsService {
   recordRun(scenario: string, outcome: string, seconds: number) {
     this.runs.inc({ scenario, outcome });
     this.duration.observe({ scenario }, seconds);
+    this.prdRuns.inc({ type: scenario, status: outcome });
+  }
+
+  recordHttpRequest(method: string, path: string, status: string) {
+    this.httpRequests.inc({ method, path, status });
   }
 }

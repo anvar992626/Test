@@ -25,7 +25,8 @@ For a **single-page map** of the AI layer (rules, skills, commands, hooks, orche
 
 - `GET /health` — liveness + PostgreSQL `SELECT 1` (503 if DB down).
 - `GET /api/docs` — Swagger UI (OpenAPI); disable with `SWAGGER_ENABLED=false`.
-- `POST /api/scenarios` — run scenario (`{ "scenario": "system_error" | ... }`).
+- `POST /api/scenarios/run` — canonical run (`{ "type": "system_error" | "teapot" | ... , "name"?, "metadata"? }`).
+- `POST /api/scenarios` — legacy run (`{ "scenario": "..." }`, deprecated).
 - `GET /api/scenarios` — recent persisted runs.
 - `GET /metrics` — Prometheus text exposition.
 

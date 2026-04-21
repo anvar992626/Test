@@ -56,14 +56,14 @@ See **`docs/SCORE_100.md`** for how this maps to a **100/100** rubric pass and *
 ## Manual verification script (~15 min)
 
 1. Open http://localhost:3000 — you should see **Signal Lab** with three cards.
-2. Choose **system_error** → **Run scenario**. Expect an error banner (500) — that is intentional.
-3. Open http://localhost:3001/metrics — search for `signallab_scenario_runs_total` and confirm totals increased (`outcome="error"` for the failed run).
+2. Choose **system_error** → **Run scenario**. Expect a destructive toast (500) — that is intentional.
+3. Open http://localhost:3001/metrics — search for `signallab_scenario_runs_total` and `scenario_runs_total` / `http_requests_total` and confirm counters move after requests.
 4. Open **http://localhost:3020** → Explore → Loki. Examples (Promtail adds **`scenario`** and **`level`** labels from Pino JSON on the `api` service):
    - `{job="docker", compose_service="api"} |= "signallab"`
    - `{job="docker", compose_service="api", scenario="system_error"}`
    - `{job="docker", compose_service="api", scenario="success"}`  
    Lines should appear within ~1 minute of ingestion. After changing Promtail config: `docker compose up -d --force-recreate promtail`.
-5. Open **Dashboards → Signal Lab → Signal Lab — Metrics & Logs** — **4 panels** (metrics + two Loki views, including label filter demo).
+5. Open **Dashboards → Signal Lab → Signal Lab — Metrics & Logs** — Prometheus + Loki panels (including PRD `scenario_runs_total` / `http_requests_total` and two Loki views).
 6. If `SENTRY_DSN` is set, open your Sentry project and confirm a new error for the simulated failure.
 
 ## Local development (without Docker for apps)

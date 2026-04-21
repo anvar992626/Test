@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { MetricsService } from '../metrics/metrics.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { RunScenarioRunDto } from './dto/run-scenario-run.dto';
 import { ScenarioType } from './dto/run-scenario.dto';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -23,7 +25,23 @@ export class ScenarioService {
     });
   }
 
-  async execute(scenario: ScenarioType) {
+  executeRun(body: RunScenarioRunDto) {
+    if (body.type === 'teapot') {
+      throw new HttpException(
+        { statusCode: 418, error: "I'm a teapot", message: 'Signal 42' },
+        HttpStatus.I_AM_A_TEAPOT,
+      );
+    }
+    return this.execute(body.type as ScenarioType, {
+      name: body.name,
+      metadata: body.metadata,
+    });
+  }
+
+  async execute(
+    scenario: ScenarioType,
+    opts?: { name?: string; metadata?: Record<string, unknown> },
+  ) {
     const t0 = Date.now();
     let outcome: 'success' | 'validation_error' | 'error' = 'success';
     let errorMessage: string | null = null;
@@ -33,11 +51,11 @@ export class ScenarioService {
     } catch (e) {
       outcome = scenario === 'validation_error' ? 'validation_error' : 'error';
       errorMessage = e instanceof Error ? e.message : String(e);
-      await this.finishRun(scenario, outcome, errorMessage, t0);
+      await this.finishRun(scenario, outcome, errorMessage, t0, opts);
       throw e;
     }
 
-    await this.finishRun(scenario, outcome, errorMessage, t0);
+    await this.finishRun(scenario, outcome, errorMessage, t0, opts);
     return { ok: true as const, scenario };
   }
 
@@ -46,6 +64,7 @@ export class ScenarioService {
     outcome: string,
     errorMessage: string | null,
     t0: number,
+    opts?: { name?: string; metadata?: Record<string, unknown> },
   ) {
     const durationMs = Date.now() - t0;
     const seconds = durationMs / 1000;
@@ -57,6 +76,11 @@ export class ScenarioService {
         outcome,
         durationMs,
         errorMessage,
+        name: opts?.name,
+        metadata:
+          opts?.metadata !== undefined
+            ? (opts.metadata as Prisma.InputJsonValue)
+            : undefined,
       },
     });
 
@@ -93,6 +117,16 @@ export class ScenarioService {
           'scenario_slow_done',
         );
         return;
+
+      case 'slow_request': {
+        const ms = 2000 + Math.floor(Math.random() * 3001);
+        await sleep(ms);
+        this.logger.info(
+          { signallab: true, scenario, msg: 'scenario_slow_request_done', delayMs: ms },
+          'scenario_slow_request_done',
+        );
+        return;
+      }
 
       case 'business_event':
         this.logger.info(

@@ -2,9 +2,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as Sentry from '@sentry/node';
+import type { NextFunction, Request, Response } from 'express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { SentryExceptionFilter } from './common/sentry-exception.filter';
+import { MetricsService } from './metrics/metrics.service';
 
 async function bootstrap() {
   if (process.env.SENTRY_DSN) {
@@ -17,6 +19,19 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+
+  const metrics = app.get(MetricsService);
+  const httpServer = app.getHttpAdapter().getInstance() as {
+    use: (fn: (req: Request, res: Response, next: NextFunction) => void) => void;
+  };
+  httpServer.use((req: Request, res: Response, next: NextFunction) => {
+    res.on('finish', () => {
+      const path = typeof req.path === 'string' && req.path.length > 0 ? req.path : '/';
+      metrics.recordHttpRequest(req.method ?? 'GET', path, String(res.statusCode));
+    });
+    next();
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

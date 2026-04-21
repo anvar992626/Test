@@ -49,6 +49,25 @@ async function main() {
     if (!Array.isArray(j)) throw new Error('expected JSON array');
   });
 
+  await must(`POST ${base}/api/scenarios/run (success)`, async () => {
+    const r = await fetch(`${base}/api/scenarios/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'success' }),
+    });
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    const j = await r.json();
+    if (!j.ok || j.scenario !== 'success') throw new Error(JSON.stringify(j));
+  });
+
+  await must(`GET ${base}/metrics contains PRD counters`, async () => {
+    const r = await fetch(`${base}/metrics`);
+    const t = await r.text();
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    if (!t.includes('scenario_runs_total')) throw new Error('missing scenario_runs_total');
+    if (!t.includes('http_requests_total')) throw new Error('missing http_requests_total');
+  });
+
   if (process.exitCode) {
     console.error('\nVerification failed. Is the API up? docker compose ps');
     process.exit(1);

@@ -13,6 +13,8 @@ model ScenarioRun {
   outcome       String
   durationMs    Int
   errorMessage  String?
+  name          String?
+  metadata      Json?
   createdAt     DateTime @default(now())
 
   @@index([createdAt])

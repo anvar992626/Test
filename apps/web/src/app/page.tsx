@@ -5,9 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity, ExternalLink, FlaskConical, History } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -19,14 +21,24 @@ import { apiFetch } from '@/lib/api';
 
 const scenarios = [
   { value: 'success', label: 'success — happy path + logs' },
-  { value: 'slow_operation', label: 'slow_operation — latency (histogram)' },
+  { value: 'slow_operation', label: 'slow_operation — ~600ms delay' },
+  { value: 'slow_request', label: 'slow_request — 2–5s delay (histogram)' },
   { value: 'business_event', label: 'business_event — structured domain log' },
   { value: 'validation_error', label: 'validation_error — 400 (no Sentry)' },
   { value: 'system_error', label: 'system_error — 500 + Sentry' },
+  { value: 'teapot', label: 'teapot — Signal 42 (418)' },
 ] as const;
 
 const schema = z.object({
-  scenario: z.enum(['success', 'slow_operation', 'business_event', 'validation_error', 'system_error']),
+  scenario: z.enum([
+    'success',
+    'slow_operation',
+    'slow_request',
+    'business_event',
+    'validation_error',
+    'system_error',
+    'teapot',
+  ]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -37,10 +49,13 @@ type ScenarioRun = {
   outcome: string;
   durationMs: number;
   errorMessage: string | null;
+  name?: string | null;
+  metadata?: unknown;
   createdAt: string;
 };
 
 export default function HomePage() {
+  const { toast } = useToast();
   const qc = useQueryClient();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -54,11 +69,24 @@ export default function HomePage() {
 
   const run = useMutation({
     mutationFn: (scenario: FormValues['scenario']) =>
-      apiFetch<{ ok: boolean; scenario: string }>('/api/scenarios', {
+      apiFetch<{ ok: boolean; scenario: string }>('/api/scenarios/run', {
         method: 'POST',
-        body: JSON.stringify({ scenario }),
+        body: JSON.stringify({ type: scenario }),
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['scenarios', 'history'] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['scenarios', 'history'] });
+      toast({
+        title: 'Scenario finished',
+        description: `OK — ran ${data.scenario}. Metrics and logs updated.`,
+      });
+    },
+    onError: (err: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Run failed',
+        description: err.message,
+      });
+    },
   });
 
   return (
@@ -127,16 +155,10 @@ export default function HomePage() {
               <Button type="submit" className="w-full" disabled={run.isPending}>
                 {run.isPending ? 'Running…' : 'Run scenario'}
               </Button>
-              {run.isError && (
-                <p className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                  {(run.error as Error).message}
-                </p>
-              )}
-              {run.isSuccess && (
-                <p className="rounded-md border border-primary/30 bg-primary/10 p-3 text-sm text-primary-foreground">
-                  OK — ran <strong>{run.data.scenario}</strong>. Check metrics and logs.
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Uses <code className="rounded bg-secondary px-1">POST /api/scenarios/run</code> with{' '}
+                <code className="rounded bg-secondary px-1">{`{ type }`}</code>.
+              </p>
             </form>
           </CardContent>
         </Card>
@@ -166,20 +188,10 @@ export default function HomePage() {
                   <span className="font-mono text-xs text-muted-foreground">
                     {new Date(row.createdAt).toLocaleString()}
                   </span>
-                  <span>
-                    <strong>{row.scenario}</strong>{' '}
-                    <span
-                      className={
-                        row.outcome === 'success'
-                          ? 'text-emerald-400'
-                          : row.outcome === 'validation_error'
-                            ? 'text-amber-400'
-                            : 'text-red-400'
-                      }
-                    >
-                      ({row.outcome})
-                    </span>{' '}
-                    · {row.durationMs}ms
+                  <span className="flex flex-wrap items-center gap-2">
+                    <strong>{row.scenario}</strong>
+                    <OutcomeBadge outcome={row.outcome} />
+                    <span className="text-muted-foreground">· {row.durationMs}ms</span>
                   </span>
                 </li>
               ))}
@@ -213,6 +225,28 @@ export default function HomePage() {
         </Card>
       </div>
     </main>
+  );
+}
+
+function OutcomeBadge({ outcome }: { outcome: string }) {
+  if (outcome === 'success') {
+    return (
+      <Badge variant="outline" className="border-emerald-500/50 font-mono text-xs text-emerald-400">
+        {outcome}
+      </Badge>
+    );
+  }
+  if (outcome === 'validation_error') {
+    return (
+      <Badge variant="secondary" className="font-mono text-xs text-amber-400">
+        {outcome}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="destructive" className="font-mono text-xs">
+      {outcome}
+    </Badge>
   );
 }
 

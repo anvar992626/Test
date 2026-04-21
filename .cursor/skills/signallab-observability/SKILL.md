@@ -12,6 +12,8 @@ description: >-
 1. **Run a scenario** from the UI (`system_error` is best for Sentry; `success` for quiet checks).
 2. **Metrics**: open `http://localhost:3001/metrics` and confirm counters:
    - `signallab_scenario_runs_total{scenario="...",outcome="..."}`
+   - `scenario_runs_total{type="...",status="..."}`
+   - `http_requests_total{method="...",path="...",status="..."}`
    - `signallab_scenario_duration_seconds_bucket{...}`
 3. **Prometheus targets**: `http://localhost:9090/targets` → job `signallab-api` should be **UP**.
 4. **Logs → Loki**: Promtail (`infra/promtail/config.yml`) decodes Docker logs and, for **`compose_service="api"`**, extracts **`scenario`** and **`level`** from Pino JSON into **Loki labels** (regex-based so non-JSON lines are not dropped). Explore examples:

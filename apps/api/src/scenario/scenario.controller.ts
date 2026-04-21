@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -7,6 +7,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { RunScenarioRunDto } from './dto/run-scenario-run.dto';
 import { RunScenarioDto } from './dto/run-scenario.dto';
 import { ScenarioService } from './scenario.service';
 
@@ -24,8 +25,27 @@ export class ScenarioController {
     return this.scenarios.listRecent(n);
   }
 
+  @Post('run')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Execute a scenario (canonical PRD shape: type, optional name & metadata)',
+  })
+  @ApiBody({ type: RunScenarioRunDto })
+  @ApiOkResponse({
+    description: 'Success path',
+    schema: { example: { ok: true, scenario: 'success' } },
+  })
+  @ApiBadRequestResponse({ description: 'validation_error scenario or bad payload' })
+  runCanonical(@Body() body: RunScenarioRunDto) {
+    return this.scenarios.executeRun(body);
+  }
+
   @Post()
-  @ApiOperation({ summary: 'Execute a scenario (metrics, logs, optional Sentry)' })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Execute a scenario (legacy body: { scenario })',
+    deprecated: true,
+  })
   @ApiBody({ type: RunScenarioDto })
   @ApiOkResponse({
     description: 'Success path',

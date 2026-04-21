@@ -5,6 +5,7 @@ export const SCENARIO_TYPES = [
   'system_error',
   'success',
   'slow_operation',
+  'slow_request',
   'validation_error',
   'business_event',
 ] as const;
